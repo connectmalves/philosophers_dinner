@@ -11,6 +11,8 @@
 #define RIGHT (taskId)%nFil
 #define request 10
 #define nill 	11
+#define fork 	12
+
 
 typedef int bool;
 
@@ -23,6 +25,17 @@ void needs_resource(bool* hungry, bool* holds_fork, int taskId)
 	MPI_Send(&message, 1, MPI_INT, RIGHT, 1, MPI_COMM_WORLD);
 }
 
+void pegaFork(int taskId, bool hungry, bool holds_turn, bool owes_fork)
+{
+	MPI_Status status;
+	int message;
+	MPI_Recv(&message, nFil, MPI_INT, taskId, 1, MPI_COMM_WORLD, &status);
+	if(message == fork)
+	{
+		holds_fork = true;
+		// if()
+	}
+}
 void verificaRequest(int destination, bool hungry, bool holds_turn, bool owes_fork)
 {
 	MPI_Status status;
@@ -37,7 +50,7 @@ void verificaRequest(int destination, bool hungry, bool holds_turn, bool owes_fo
 				message = nill;
 				// MPI_Send(message, 1, MPI_INT, destination, 1, MPI_COMM_WORLD);
 			else
-				message = request;
+				message = fork;
 			
 			MPI_Send(&message, 1, MPI_INT, destination, 1, MPI_COMM_WORLD);
 		}
@@ -53,6 +66,7 @@ int main(int argc, char *argv[])
 		numTasks;	       //numero total de filósofos
 	
 	bool hungry, holds_fork, holds_turn, owes_fork;
+
 	// bool hungry[nFil]    , //filósofos com fome
 	//      holds_fork[nFil], //
 	//      holds_turn[nFil], //
@@ -97,8 +111,10 @@ int main(int argc, char *argv[])
 		while(true)
 		{
 			//verifica se há request
-			verificaRequest(taskId, hungry, holds_turn, owes_fork);
-			
+			verificaRequest(LEFT, hungry, holds_turn, owes_fork);
+			verificaRequest(RIGHT, hungry, holds_turn, owes_fork);
+			pegaFork(LEFT, hungry, holds_turn, owes_fork);
+			pegaFork(RIGHT, hungry, holds_turn, owes_fork);
 		}
 		// while(true)
 		// {
